@@ -132,4 +132,7 @@
       <Name>BottomSheet</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\Slice 2.png" />
+  </ItemGroup>
 </Project>
