@@ -15,6 +15,16 @@ namespace BottomSheet
     public partial class MainPage : ContentPage
     {
         public IList<Monkey> Monkeys { get; private set; }
+        double yHalfPosition;
+        double yFullPosition;
+        double yZeroPosition;
+        int currentPsotion;
+        double currentPostionY;
+        bool up;
+        bool down;
+        bool isTurnY;
+        double valueY;
+        double y;
 
         public MainPage()
         {
@@ -146,155 +156,158 @@ namespace BottomSheet
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            currentY = 0;
+            yHalfPosition = (App.screenHeight / 2) - 60;
+            yFullPosition = App.screenHeight - 190;
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                yFullPosition = App.screenHeight - (20 + 20 + 30 + 120);
+            }
+            yZeroPosition = 0;
+            currentPsotion = 1;
+            currentPostionY = yHalfPosition;
+
+            bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
         }
 
         /*
          * Important code lies below
          */
 
-        private double y;
-        private bool IsTurnY;
-        private double valueY;
-        private double currentY;
+
 
         void PanGestureRecognizer_PanUpdated(System.Object sender, Xamarin.Forms.PanUpdatedEventArgs e)
         {
-            y = e.TotalY;
-
+            // Handle the pan
             switch (e.StatusType)
             {
-                case GestureStatus.Started:
-                    break;
-                case GestureStatus.Canceled:
-                    break;
                 case GestureStatus.Running:
-                    if (Device.Android == Device.RuntimePlatform)
+                    // Translate and ensure we don't y + e.TotalY pan beyond the wrapped user interface element bounds.
+                    var translateY = Math.Max(Math.Min(0, y + e.TotalY), -Math.Abs((Height * .25) - Height));
+                    //bottomSheet.TranslateTo(bottomSheet.X, -1*(currentPostionY+(-1*translateY)),20); //up working good
+
+
+
+                    if (e.TotalY >= 5 || e.TotalY <= -5 && !isTurnY)
                     {
-                        MethodLockedSync(() =>
-                        {
-
-                            Device.BeginInvokeOnMainThread(() =>
-                            {
-
-
-                                if ((y >= 5 || y <= -5) && !IsTurnY)
-                                {
-                                    IsTurnY = true;
-                                }
-
-                                if (IsTurnY)
-                                {
-
-                                    if (y <= valueY)
-                                    {
-                                        //upwards dragged
-                                        
-                                    if ((currentY + (-1 * y)) < (App.screenHeight - 180))
-                                        {
-                                            BottomSheet.TranslateTo(BottomSheet.X, -(currentY + (-1 * y)));
-                                            currentY = currentY - y;
-                                        //Task.Delay(200);
-                                    }
-                                        else
-                                        {
-
-                                            //to avoid the bottomsheet go beyond the device height
-                                             
-                                            BottomSheet.TranslateTo(BottomSheet.X, -(App.screenHeight - 180));
-                                            currentY = (App.screenHeight - 180);
-                                        }
-                                    }
-                                    if (y >= valueY)
-                                    {
-                                    //downwards dragged
-                                    if ((currentY - y) > 0)
-                                        {
-                                            BottomSheet.TranslateTo(BottomSheet.X, -(currentY - y));
-                                            currentY = currentY - y;
-                                        //Task.Delay(200);
-                                    }
-                                        else
-                                        {
-                                        //to avoid bottomsheet to hide below the screen height
-                                        BottomSheet.TranslateTo(BottomSheet.X, -0);
-                                            currentY = 0;
-                                        }
-                                    }
-                                }
-                            });
-                        }, 2);
+                        isTurnY = true;
                     }
-                    else
+                    if (isTurnY)
                     {
-                        if ((y >= 5 || y <= -5) && !IsTurnY)
+                        if (e.TotalY <= valueY)
                         {
-                            IsTurnY = true;
-                        }
+                            up = true;
 
-                        if (IsTurnY)
+                        }
+                        if (e.TotalY >= valueY)
                         {
-
-                            if (y <= valueY)
-                            {
-                                //iOS devices has top and bottom insets so the value is changed accordingly.
-                                //get the top and bottom insets and adjst the values accordingly for bottom sheet to work correct in real devices
-                                double valueToDeduct = 180;
-                                
-                                //upwards dragged
-                                if ((currentY + (-1 * y)) < (App.screenHeight - valueToDeduct))
-                                {
-                                    BottomSheet.TranslateTo(BottomSheet.X, -(currentY + (-1 * y)));
-                                    currentY = currentY - y;
-                                    //Task.Delay(200);
-                                }
-                                else
-                                {
-                                    //to avoid the bottomsheet go beyond the device height
-                                    BottomSheet.TranslateTo(BottomSheet.X, -(App.screenHeight - valueToDeduct));
-                                    currentY = (App.screenHeight - valueToDeduct);
-                                }
-                            }
-                            if (y >= valueY)
-                            {
-                                //downwards dragged
-                                if ((currentY - y) > 0)
-                                {
-                                    BottomSheet.TranslateTo(BottomSheet.X, -(currentY - y));
-                                    currentY = currentY - y;
-                                    //Task.Delay(200);
-                                }
-                                else
-                                {
-                                    //to avoid bottomsheet to hide below the screen height
-                                    BottomSheet.TranslateTo(BottomSheet.X, -0);
-                                    currentY = 0;
-                                }
-                            }
+                            down = true;
 
                         }
+                    }
+                    if (up)
+                    {
+                        if (Device.RuntimePlatform == Device.Android)
+                        {
+                            if (yFullPosition < (currentPostionY + (-1 * e.TotalY)))
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -yFullPosition);
+                            }
+                            else
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -1 * (currentPostionY + (-1 * e.TotalY)));
+                            }
                         }
+                        else
+                        {
+                            if (yFullPosition < (currentPostionY + (-1 * e.TotalY)))
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -yFullPosition, 20);
+                            }
+                            else
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -1 * (currentPostionY + (-1 * e.TotalY)), 20);
+                            }
+                        }
+                    }
+                    else if (down)
+                    {
+                        if (Device.RuntimePlatform == Device.Android)
+                        {
+                            if (yZeroPosition > currentPostionY - e.TotalY)
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -yZeroPosition);
+                            }
+                            else
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -(currentPostionY - (e.TotalY)));
+                            }
+                        }
+                        else
+                        {
+                            if (yZeroPosition > currentPostionY - e.TotalY)
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -yZeroPosition, 20);
+                            }
+                            else
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -(currentPostionY - (e.TotalY)), 20);
+                            }
+                        }
+                    }
                     break;
-
                 case GestureStatus.Completed:
-                    //store the translation applied during the pan
-                    valueY = y;
-                    IsTurnY = false;
-                    break;
-            }
-        }
+                    // Store the translation applied during the pan
+                    valueY = e.TotalY;
+                    y = bottomSheet.TranslationY;
 
-        private CancellationTokenSource _throttleCts = new CancellationTokenSource();
-        private void MethodLockedSync(Action method,double timeDelay = 500)
-        {
-            Interlocked.Exchange(ref _throttleCts, new CancellationTokenSource()).Cancel();
-            Task.Delay(TimeSpan.FromMilliseconds(timeDelay), _throttleCts.Token)
-                .ContinueWith(
-                delegate { method(); },
-                CancellationToken.None,
-                TaskContinuationOptions.OnlyOnRanToCompletion,
-                TaskScheduler.FromCurrentSynchronizationContext()
-                );
+                    //at the end of the event - snap to the closest location
+                    //var finalTranslation = Math.Max(Math.Min(0, -1000), -Math.Abs(getClosestLockState(e.TotalY + y)));
+
+                    //depending on Swipe Up or Down - change the snapping animation
+                    if (up)
+                    {
+                        //swipe up happened
+                        if (currentPsotion == 1)
+                        {
+                            bottomSheet.TranslateTo(bottomSheet.X, -yFullPosition);
+                            currentPsotion = 2;
+                            currentPostionY = yFullPosition;
+                            //bottomSheet.TranslateTo(bottomSheet.X, finalTranslation, 250, Easing.SpringIn);
+                        }
+                        else if (currentPsotion == 0)
+                        {
+                            bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
+                            currentPsotion = 1;
+                            currentPostionY = yHalfPosition;
+                        }
+
+                    }
+                    if (down)
+                    {
+                        //swipe down happened
+                        if (currentPsotion == 1)
+                        {
+                            bottomSheet.TranslateTo(bottomSheet.X, -yZeroPosition);
+                            currentPsotion = 0;
+                            currentPostionY = yZeroPosition;
+                        }
+                        else if (currentPsotion == 2)
+                        {
+                            bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
+                            currentPsotion = 1;
+                            currentPostionY = yHalfPosition;
+                        }
+                        //bottomSheet.TranslateTo(bottomSheet.X, finalTranslation, 250, Easing.SpringOut);
+                    }
+
+                    //dismiss the keyboard after a transition
+                    //SearchBox.Unfocus();
+                    y = bottomSheet.TranslationY;
+                    up = false;
+                    down = false;
+                    break;
+
+            }
         }
     }
 }
