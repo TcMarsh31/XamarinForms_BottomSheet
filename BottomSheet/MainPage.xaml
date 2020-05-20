@@ -5,8 +5,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="BottomSheet.MainPage"
+             xmlns:custom="clr-namespace:BottomSheet"
              BackgroundColor="LightCoral">
-    <RelativeLayout>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+    
+    <RelativeLayout Grid.Row="0">
         <!-- Behind Body content-->
         <StackLayout Margin="10,50,10,10" >
             
@@ -27,23 +33,38 @@
 
         </StackLayout>
 
-        <!-- change the YConstraint factor value to adjust the height of the bottom sheet at initial stage-->
-        <Frame HasShadow="True" CornerRadius="20" Padding="0,20,0,0" Margin="0,0,0,100" x:Name="bottomSheet"
-               RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.93,Constant=0}"
+        <Grid  x:Name="bottomSheet" RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.93,Constant=0}"
                RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width,Factor=1,Constant=0}"
                RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height,Factor=1,Constant=0}">
-            <Frame.GestureRecognizers>
+            <Grid.GestureRecognizers>
                 <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated"></PanGestureRecognizer>
-            </Frame.GestureRecognizers>
+            </Grid.GestureRecognizers>
+        <!-- change the YConstraint factor value to adjust the height of the bottom sheet at initial stage-->
+           
+            <OnPlatform x:TypeArguments="View">
+                <On Platform="iOS">
+                    <custom:CustomBoxView CornerRadius="20"  Margin="0,0,0,0" BackgroundColor="White" ShadowColor="Black" ShadowOpacity="1" ShadowRadius="8" OffsetX="0" OffsetY="2">
 
+                    </custom:CustomBoxView>
+                </On>
+                <On Platform="Android">
+                    <custom:CustomFrame CornerRadius="20"  Margin="0,0,0,0" BackgroundColor="White">
+
+                    </custom:CustomFrame>
+                </On>
+            </OnPlatform>
+
+            
+        
+            
             <!-- Bottom sheet body content-->
             <!-- Place any thins you want to display inside the bottom sheet-->
-            <StackLayout Spacing="5">
+            <StackLayout Spacing="5" x:Name="bottomsheetStack" Margin="0,20,0,0">
                 <!-- box view to show a bar to elobrate that this section can be dragged-->
                 <BoxView HeightRequest="5" CornerRadius="2" WidthRequest="50" BackgroundColor="Gray" HorizontalOptions="Center"></BoxView>
                 <!-- below is the body content of bottom sheet-->
-                <ListView ItemsSource="{Binding Monkeys}"
-                      HasUnevenRows="true" Margin="0,20,0,0"
+                <ListView ItemsSource="{Binding Monkeys}" VerticalOptions="Fill" HorizontalOptions="FillAndExpand"
+                      HasUnevenRows="true" Margin="0,20,0,0" x:Name="bottomsheetListView" VerticalScrollBarVisibility="Never"
                       >
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -75,6 +96,8 @@
                 </ListView.ItemTemplate>
             </ListView>
             </StackLayout>
-        </Frame>
+        
+            </Grid>
     </RelativeLayout>
+        </Grid>
 </ContentPage>

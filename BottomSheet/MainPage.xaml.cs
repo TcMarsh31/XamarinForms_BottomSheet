@@ -165,6 +165,7 @@ namespace BottomSheet
             yZeroPosition = 0;
             currentPsotion = 1;
             currentPostionY = yHalfPosition;
+            bottomsheetListView.HeightRequest = yHalfPosition;
 
             bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
         }
@@ -272,13 +273,32 @@ namespace BottomSheet
                             bottomSheet.TranslateTo(bottomSheet.X, -yFullPosition);
                             currentPsotion = 2;
                             currentPostionY = yFullPosition;
+                            bottomsheetListView.HeightRequest = yFullPosition;
+                            bottomsheetListView.HeightRequest = yFullPosition;
                             //bottomSheet.TranslateTo(bottomSheet.X, finalTranslation, 250, Easing.SpringIn);
                         }
                         else if (currentPsotion == 0)
                         {
-                            bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
-                            currentPsotion = 1;
-                            currentPostionY = yHalfPosition;
+                            double currentY = (-1) * y;
+                            double differentBetweenHalfAndCurrent = Math.Abs(currentY - yHalfPosition);
+                            double differentBetweenFullAndCurrent = Math.Abs(currentY - yFullPosition);
+                            //check which is close snap point and move to the closest snap point
+                            if (differentBetweenHalfAndCurrent< differentBetweenFullAndCurrent)
+                            {
+                                //yHalfPosition is the closest one
+                                bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
+                                currentPsotion = 1;
+                                currentPostionY = yHalfPosition;
+                                bottomsheetListView.HeightRequest = yHalfPosition;
+                            }
+                            else
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -yFullPosition);
+                                currentPsotion = 2;
+                                currentPostionY = yFullPosition;
+                                bottomsheetListView.HeightRequest = yFullPosition;
+                            }
+                            
                         }
 
                     }
@@ -293,9 +313,26 @@ namespace BottomSheet
                         }
                         else if (currentPsotion == 2)
                         {
-                            bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
-                            currentPsotion = 1;
-                            currentPostionY = yHalfPosition;
+                            double currentY = (-1) * y;
+                            double differentBetweenHalfAndCurrent = Math.Abs(currentY - yHalfPosition);
+                            double differentBetweenZeroAndCurrent = Math.Abs(currentY - yZeroPosition);
+                            //check which is close snap point and move to the closest snap point
+                            if (differentBetweenHalfAndCurrent < differentBetweenZeroAndCurrent)
+                            {
+                                //yHalfPosition is the closest one
+                                bottomSheet.TranslateTo(bottomSheet.X, -yHalfPosition);
+                                currentPsotion = 1;
+                                currentPostionY = yHalfPosition;
+                                bottomsheetListView.HeightRequest = yHalfPosition;
+                            }
+                            else
+                            {
+                                bottomSheet.TranslateTo(bottomSheet.X, -yZeroPosition);
+                                currentPsotion = 0;
+                                currentPostionY = yZeroPosition;
+                            }
+                            
+
                         }
                         //bottomSheet.TranslateTo(bottomSheet.X, finalTranslation, 250, Easing.SpringOut);
                     }
